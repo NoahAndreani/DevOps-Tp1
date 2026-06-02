@@ -1,0 +1,17 @@
+# ---------- STAGE 1 : build ----------
+FROM node:20-alpine AS ilbuildlui
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+
+FROM node:20-alpine AS testappfini
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --omit=dev
+COPY --from=ilbuildlui --chown=node:node /app/dist ./dist
+USER node
+EXPOSE 3000
+CMD ["node", "dist/main.js"]
